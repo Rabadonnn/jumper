@@ -1,0 +1,14 @@
+
+
+
+{
+  "outputDir": "dist/",
+  "indexFile": "dist/index.html",
+  "commands": [
+    "npm install",
+    "npm run prod-build"
+  ]
+}
+
+
+

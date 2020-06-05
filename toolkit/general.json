@@ -1,0 +1,321 @@
+{
+    "editor": [
+        {
+            "icon": "",
+            "key": "preGameScreen",
+            "header": "PreGameScreen",
+            "disabled": false,
+            "fields": [
+                {
+                    "key": "titleText",
+                    "header": "Title Text",
+                    "type": "text"
+                },
+                {
+                    "key": "titleTextSize",
+                    "header": "Title text size",
+                    "type": "range",
+                    "options": {
+                        "minValue": 20,
+                        "maxValue": 40,
+                        "stepSize": "1"
+                    }
+                },
+                {
+                    "key": "playButtonText",
+                    "header": "Play Button Text",
+                    "type": "text"
+                },
+                {
+                    "key": "buttonTextColor",
+                    "header": "Play Button Text Color",
+                    "type": "color"
+                },
+                {
+                    "key": "backgroundImage",
+                    "header": "Background Image",
+                    "type": "image"
+                },
+                {
+                    "key": "titleImage",
+                    "header": "Header Image",
+                    "type": "image"
+                },
+                {
+                    "key": "titleImageSize",
+                    "header": "Header image size",
+                    "type": "range",
+                    "options": {
+                        "minValue": 150,
+                        "maxValue": 400,
+                        "stepSize": "1"
+                    }
+                }, 
+                {
+                    "key": "cardColor",
+                    "header": "Card Color",
+                    "type": "color"
+                },
+                {
+                    "key": "buttonColor",
+                    "header": "Play Button Color",
+                    "type": "color"
+                },
+                {
+                    "key": "fontFamily",
+                    "header": "Google Font Name",
+                    "type": "text"
+                },
+                {
+                    "key": "showLeaderboardButton",
+                    "header": "Show leaderboard button",
+                    "type": "boolean"
+                },
+                {
+                    "key": "leaderboardButtonText",
+                    "header": "Leaderboard button text",
+                    "type": "text"
+                },
+                {
+                    "key": "showSoundButton",
+                    "header": "Show sound button",
+                    "type": "boolean"
+                },
+                {
+                    "key": "soundEnabledIcon",
+                    "type": "image",
+                    "header": "Sound enabled icon"
+                },
+                {
+                    "key": "soundDisabledIcon",
+                    "type": "image",
+                    "header": "Sound disabled icon"
+                }
+            ]
+        },
+        {
+            "icon": "",
+            "key": "settings",
+            "header": "Game Settings",
+            "disabled": false,
+            "fields": [
+                {
+                    "key": "instructions1",
+                    "type": "text",
+                    "header": "Instructions Text 1"
+                },
+                {
+                    "key": "instructions2",
+                    "type": "text",
+                    "header": "Instructions Text 2"
+                },
+                {
+                    "key": "instructions3",
+                    "type": "text",
+                    "header": "Instructions Text 3"
+                },
+                {
+                    "key": "textColor",
+                    "header": "In Game Text Color",
+                    "type": "color"
+                },
+                {
+                    "key": "coin",
+                    "header": "Coin image",
+                    "type": "image"
+                },
+                {
+                    "key": "block",
+                    "header": "Ground middle image",
+                    "type": "image"
+                },
+                {
+                    "key": "top",
+                    "header": "Ground top image",
+                    "type": "image"
+                },
+                {
+                    "key": "hill",
+                    "header": "Ground hill image",
+                    "type": "image"
+                },
+                {
+                    "key": "tap",
+                    "header": "Tap sound effect",
+                    "type": "sound"
+                },
+                {
+                    "key": "theme",
+                    "header": "Background Music",
+                    "type": "sound"
+                },
+                {
+                    "key": "lose",
+                    "header": "Lose sound effect",
+                    "type": "sound"
+                },
+                {
+                    "key": "volume",
+                    "header": "Background music volume",
+                    "type": "range",
+                    "options": {
+                        "minValue": 0,
+                        "maxValue": 1,
+                        "stepSize": "0.1"
+                    }
+                }
+            ]
+        },
+        {
+            "icon": "",
+            "key": "postGameScreen",
+            "header": "Post Game Screen",
+            "disabled": false,
+            "fields": [
+                 {
+                    "key": "scoreText",
+                    "header": "Text before score",
+                    "type": "text"
+                },
+                {
+                    "key": "textColor",
+                    "header": "Text Color",
+                    "type": "color"
+                },
+                {
+                    "key": "buttonTextColor",
+                    "header": "Button text color",
+                    "type": "color"
+                },
+                {
+                    "key": "cardColor",
+                    "header": "Card Background Color",
+                    "type": "color"
+                },
+                {
+                    "key": "playButtonText",
+                    "header": "Play again button text",
+                    "type": "text"
+                },
+                {
+                    "key": "buttonColor",
+                    "header": "Buttons color",
+                    "type": "color"
+                },
+                {
+                    "key": "buttonTextColor",
+                    "header": "Buttons text color",
+                    "type": "color"
+                },
+                {
+                    "key": "showText",
+                    "header": "Show custom text",
+                    "type": "boolean"
+                },
+                {
+                    "key": "customText",
+                    "header": "Custom text",
+                    "type": "text"
+                },
+                {
+                    "key": "submitName",
+                    "header": "Show name field",
+                    "type": "boolean"
+                },
+                {
+                    "key": "submitEmail",
+                    "header": "Show email field",
+                    "type": "boolean"
+                },
+                {
+                    "key": "submitScoreText",
+                    "header": "Submit score button text",
+                    "type": "text"
+                },
+                {
+                    "key": "showLeadeboardButtonPostGameScreen",
+                    "header": "Show Leadeboard Button",
+                    "type": "boolean"
+                },
+                {
+                    "key": "leaderboardButtonText",
+                    "type": "text",
+                    "header": "Leadeboard button text"
+                },
+                {
+                    "key": "showCTA",
+                    "header": "Show CTA Button",
+                    "type": "boolean"
+                },
+                {
+                    "key": "ctaText",
+                    "header": "CTA text",
+                    "type": "text"
+                },
+                {
+                    "key": "ctaButtonText",
+                    "header": "CTA button text",
+                    "type": "text"
+                },
+                {
+                    "key": "ctaUrl",
+                    "header": "CTA Link",
+                    "type": "text"
+                }
+            ]
+        }
+    ],
+    "config": {
+        "preGameScreen": {
+            "titleText": "Jumper",
+            "titleTextSize": 30,
+            "playButtonText": "Play",
+            "cardColor": "#ffffff",
+            "buttonColor": "#000000",
+            "buttonTextColor": "#ffffff",
+            "backgroundImage": "assets/background.png",
+            "titleImage": "assets/placeholder_logo.jpg",
+            "titleImageSize": 200,
+            "fontFamily": "Balsamiq Sans",
+            "showLeaderboardButton": true,
+            "leaderboardButtonText": "Leadeboard",
+            "showSoundButton": true,
+            "soundEnabledIcon": "assets/sound_on.png",
+            "soundDisabledIcon": "assets/sound_off.png"
+        },
+        "settings": {
+            "instructions1": "Tap / Spacebar to place blocks",
+            "instructions2": "Place new blocks over the old ones",
+            "instructions3": "Have fun!",
+            "textColor": "#000",
+            "coin": "assets/coin.png",
+            "top": "assets/top.png",
+            "hill": "assets/hill.png",
+            "block": "assets/block.png",
+            "theme": "assets/theme.ogg",
+            "volume": "0.7",
+            "tap": "assets/tap.wav",
+            "lose": "assets/lose.wav"
+        },
+        "postGameScreen": {
+            "scoreText": "Your score is: ",
+            "playButtonText": "Play Again",
+            "buttonColor": "#000000",
+            "cardColor": "#ffffff",
+            "textColor": "#000000",
+            "buttonTextColor": "#ffffff",
+            "showLeadeboardButtonPostGameScreen": true,
+            "submitScoreText": "Submit score",
+            "leaderboardButtonText": "Leaderboard",
+            "showText": true,
+            "customText": "Hello world",
+            "submitName": true,
+            "submitEmail": true,
+            "showCTA": true,
+            "ctaText": "Check out our page for more",
+            "ctaButtonText": "Go to Playcent",
+            "ctaUrl": "http://playcent.com/browser/#/home"
+        }
+    }
+}
+

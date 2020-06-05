@@ -1,0 +1,44 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<!-- Use mobile-aware viewport -->
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- Load WebFontLoader -->
+        <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script> 
+
+        <!-- Load tween library -->
+        <script src="https://jeremyckahn.github.io/shifty/shifty.js"></script>
+
+        <!-- Load p5 -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.0.0/p5.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.dom.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.0/addons/p5.sound.min.js"></script>
+	
+        <!-- Load React. -->
+        <!-- Note: when deploying, replace "development.js" with "production.min.js". -->
+        <!-- <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script> 
+        <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script> -->
+    </head>
+	<body>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+            }
+            canvas {
+                position: fixed;
+                z-index: -1;
+            }
+            #button {
+                transition: all .06s ease-in-out;
+            }
+            #button:hover {
+                transform: scale(1.06);
+            }
+        </style>
+        
+        <div id="game-container"></div>
+        <div id="screens"></div>
+	</body>
+</html>
