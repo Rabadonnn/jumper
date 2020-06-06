@@ -7,10 +7,11 @@ const TileType = {
     block: 2,
     hill: 3
 };
-
-const TileSize = 80;
-
-const ColumnSpeed = 200;
+const TileSize = 70;
+const ColumnSpeed = 450;
+const PlayerSize = 90;
+const PlayerGravity = 100;
+const PlayerJumpForce = 300;
 
 class Tile {
     constructor(x, y, type) {
@@ -67,10 +68,72 @@ class Column {
             tile.draw();
         })
 
-        fill(this.color);
-        // rect(this.x, height - TileSize, TileSize, TileSize);
+        if (DEBUG) {
+            fill(this.color);
+            rect(this.x, height - TileSize, TileSize, TileSize);
+        }
 
-        this.dead = this.x + TileSize< 0;
+        this.dead = this.x + TileSize < 0;
+    }
+}
+
+class Player {
+    constructor() {
+        this.img = window.images.player;
+        this.size = calculateAspectRatioFit(this.img.width, this.img.height, PlayerSize, PlayerSize);
+        this.x = (width / 2) * 0.4;
+        this.y = 100;
+        this.scale = 1;
+        this.rotation = 0;
+
+        this.rect = Rectangle.FromPosition(this.x, this.y, this.size.width, this.size.height);
+
+        this.acc = 0;
+        this.jumpFrames = 0;
+    }
+
+    draw() {
+        push();
+        translate(this.rect.center().x, this.rect.center().y);
+        scale(this.scale);
+        rotate(this.rotation);
+        imageMode(CENTER);
+        image(this.img, 0, 0, this.rect.w, this.size.h);
+        pop();
+
+        this.rect.debug();
+    }
+
+    update() {
+        if (mouseIsPressed) {
+            if (this.canJump) {
+                this.acc -= PlayerJumpForce * deltaTime / 1000;
+                this.jumpFrames++; 
+            }
+            if (this.jumpFrames > 6) {
+                this.canJump = false;
+            }
+        }
+
+        this.acc += PlayerGravity * deltaTime / 1000;
+        
+        this.rect.y += this.acc;
+    }
+
+    collisions(tiles) {
+        tiles.map(tile => {
+            let rect = new Rectangle(tile.x, tile.y, TileSize, TileSize);
+            rect.debug();
+
+            if (this.rect.center().x > rect.left() && this.rect.center().x < rect.right()) {
+                if (this.rect.bottom() > rect.top()) {
+                    this.rect.y = rect.top() - this.rect.h;
+                    this.acc = 0;
+                    this.jumpFrames = 0;
+                    this.canJump = true;
+                }
+            }
+        });
     }
 }
 
@@ -99,6 +162,8 @@ class Game {
             if (isHill) this.isHill = false;
             this.platformIndex++;
         }
+
+        this.player = new Player();
     }
 
     newPlatform() {
@@ -108,29 +173,25 @@ class Game {
         if (this.isGap == true) {
             this.isGap = false;
         } else {
-            this.isGap = random(100) < 70 && this.canGap ? true : false;
+            this.isGap = random(100) < 70 ? true : false;
         }
 
-        this.platformColor = this.isGap ? color(0) : color(random(255),random(255),random(255));
-
-        if (this.newHeight) {
+        if (this.newHeight || this.newHeight == 0) {
             this.platformHeight = this.newHeight;
         } else {
             this.platformHeight = floor(random(this.minHeight, this.maxHeight + 1));
         }
-        this.newHeight = this.getNewHeight();
-
         if (this.isGap) {
-            this.platformHeight = 0;
+            this.newHeight = 0;
+        } else {
+            this.newHeight = this.getNewHeight();
         }
         
-        if (this.newHeight > this.platformHeight) {
+        if (this.newHeight > this.platformHeight && !this.isGap) {
             this.isHill = true;
         }
-        if (this.platformHeight == 0) {
-            this.isHill = false;
-        }
-        console.log(this.platformHeight, this.newHeight);
+
+        this.platformColor = this.platformHeight == 0 ? color(0) : color(random(255),random(255),random(255));
     }
 
     getNewHeight() {
@@ -146,21 +207,28 @@ class Game {
     }
 
     permaUpdate() {
-        if (!this.started) { 
-            this.columns.map(col => {
-                col.draw();
-            });
-        }
-    }
-
-    updateGame() {
-        this.canGap = true;
+        let tiles = [];
+        
         this.columns = this.columns.filter(col => {
-            col.x -= ColumnSpeed * deltaTime / 1000;
             col.draw();
+            if (this.started) {
+                col.x -= ColumnSpeed * deltaTime / 1000;
+            }
+
+            if (col.height != 0) {
+                let lastTileInColumn = col.tiles[col.tiles.length - 1];
+                tiles.push(lastTileInColumn);
+            }
+
             return !col.dead;
         });
 
+        this.player.update();
+        this.player.collisions(tiles);
+        this.player.draw();
+    }
+
+    updateGame() {
         if (this.columns[this.columns.length - 1].x < width) {
             let x = this.columns[this.columns.length - 1].x + TileSize;
             let isHill = false
@@ -178,7 +246,7 @@ class Game {
     }
 
     onMousePress() {
-    
+
     }
 
     finishGame() {
@@ -258,11 +326,11 @@ class Game {
 
             this.mousePressed();
 
-            this.permaUpdate();
-
             if (this.started) {
                 this.updateGame();
             }
+
+            this.permaUpdate();
 
             this.particles = this.particles.filter(p => {
                 p.draw();
@@ -466,7 +534,7 @@ class Rectangle {
     }
 
     center() {
-        return new Vector2(this.x + this.w / 2, this.y + this.h / 2);
+        return createVector(this.x + this.w / 2, this.y + this.h / 2);
     }
 
     top() {

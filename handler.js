@@ -83,6 +83,7 @@ window.preload = function() {
     window.images.top = loadImage(config.settings.top);
     window.images.block = loadImage(config.settings.block);
     window.images.hill = loadImage(config.settings.hill);
+    window.images.player = loadImage(config.settings.player);
 
     window.sounds.theme = loadSound(config.settings.theme);
     window.sounds.tap = loadSound(config.settings.tap);
