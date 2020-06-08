@@ -80,6 +80,7 @@ window.sounds = {};
 window.preload = function() {
     window.images.background = loadImage(config.preGameScreen["backgroundImage"])
     window.images.coin = loadImage(config.settings.coin);
+    window.images.spikes = loadImage(config.settings.spikes);
     window.images.top = loadImage(config.settings.top);
     window.images.block = loadImage(config.settings.block);
     window.images.hill = loadImage(config.settings.hill);

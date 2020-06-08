@@ -1,6 +1,6 @@
 let config = require("visual-config-exposer").default;
 
-const DEBUG = true;
+const DEBUG = false;
 
 const TileType = {
     top: 1,
@@ -9,9 +9,13 @@ const TileType = {
 };
 const TileSize = 70;
 const ColumnSpeed = 450;
+const GapSpawnChance = 70;
 const PlayerSize = 90;
-const PlayerGravity = 100;
+const PlayerGravity = 80;
 const PlayerJumpForce = 300;
+const JumpFrames = 5;
+const CoinSize = 60;
+const CoinSpawnChance = 10;
 
 class Tile {
     constructor(x, y, type) {
@@ -70,7 +74,7 @@ class Column {
 
         if (DEBUG) {
             fill(this.color);
-            rect(this.x, height - TileSize, TileSize, TileSize);
+            rect(this.x, height - TileSize / 2, TileSize, TileSize / 2);
         }
 
         this.dead = this.x + TileSize < 0;
@@ -90,6 +94,8 @@ class Player {
 
         this.acc = 0;
         this.jumpFrames = 0;
+
+        this.dead = false;
     }
 
     draw() {
@@ -110,7 +116,7 @@ class Player {
                 this.acc -= PlayerJumpForce * deltaTime / 1000;
                 this.jumpFrames++; 
             }
-            if (this.jumpFrames > 6) {
+            if (this.jumpFrames > JumpFrames) {
                 this.canJump = false;
             }
         }
@@ -120,20 +126,70 @@ class Player {
         this.rect.y += this.acc;
     }
 
+    resetJump() {
+        this.acc = 0;
+        this.jumpFrames = 0;
+        this.canJump = true;
+    }
+
     collisions(tiles) {
+        if (this.rect.bottom() > this.minHeight + 10) {
+            this.canJump = false;
+        }
         tiles.map(tile => {
             let rect = new Rectangle(tile.x, tile.y, TileSize, TileSize);
             rect.debug();
 
             if (this.rect.center().x > rect.left() && this.rect.center().x < rect.right()) {
                 if (this.rect.bottom() > rect.top()) {
-                    this.rect.y = rect.top() - this.rect.h;
-                    this.acc = 0;
-                    this.jumpFrames = 0;
-                    this.canJump = true;
+                    this.minHeight = rect.top();
+                    this.rect.y = this.minHeight - this.rect.h;
+                    this.resetJump();
                 }
             }
         });
+    }
+}
+
+class Coin {
+    constructor(tile) {
+        this.img = window.images.coin;
+        this.size = calculateAspectRatioFit(this.img.width, this.img.height, CoinSize, CoinSize);
+        this.rect = Rectangle.FromPosition(tile.x + TileSize / 2, tile.y - TileSize, this.size.width, this.size.height);
+        this.rotation = 0;
+        this.scale = 1;
+        this.dead = false;
+        this.tile = tile;
+    }
+
+    draw() {
+
+        push();
+        translate(this.rect.center().x, this.rect.center().y);
+        rotate(this.rotation);
+        scale(this.scale);
+        imageMode(CENTER);
+        image(this.img, 0, 0, this.rect.w, this.rect.h);
+        imageMode(CORNER);
+        pop();
+
+        this.rect.debug();
+
+        if (this.tile.x < 0) {
+            this.rect.x -= ColumnSpeed * deltaTime / 1000;
+        } else {
+            this.rect.x = this.tile.x;
+        }
+        this.dead = this.rect.right() < 0;
+    }
+}
+
+class Spikes extends Coin {
+    constructor(tile) {
+        super(tile);
+        this.img = window.images.spikes;
+        this.size = calculateAspectRatioFit(this.img.width, this.img.height, TileSize, TileSize);
+        this.rect = new Rectangle(tile.x + TileSize / 2 - this.size.width / 2, tile.y - this.size.height, this.size.width, this.size.height);
     }
 }
 
@@ -148,6 +204,8 @@ class Game {
         this.maxSize = 4;
 
         this.columns = [];
+
+        this.coins = [];
 
         this.newPlatform();
         for (let i = 0; i < width; i += TileSize) {
@@ -173,7 +231,7 @@ class Game {
         if (this.isGap == true) {
             this.isGap = false;
         } else {
-            this.isGap = random(100) < 70 ? true : false;
+            this.isGap = this.started && random(100) < GapSpawnChance ? true : false;
         }
 
         if (this.newHeight || this.newHeight == 0) {
@@ -223,9 +281,23 @@ class Game {
             return !col.dead;
         });
 
+        this.coins = this.coins.filter(coin => {
+            coin.draw();
+            if (intersectRect(coin.rect, this.player.rect)) {
+                coin.dead = true;
+                this.increaseScore();;
+            }
+            return !coin.dead;
+        })
+
         this.player.update();
         this.player.collisions(tiles);
         this.player.draw();
+    }
+
+    increaseScore(amt = 1) {
+        this.score += amt;
+        this.c_scoreFontSize = this.scoreFontSize * 1.8;
     }
 
     updateGame() {
@@ -238,9 +310,17 @@ class Game {
             if (this.platformIndex == this.platformSize - 1) {
                 isHill = this.isHill;
             }
-            this.columns.push(new Column(x, this.platformHeight, this.platformColor, isHill));
+            
+            let col = new Column(x, this.platformHeight, this.platformColor, isHill);
+            this.columns.push(col);
+
             if (isHill) this.isHill = false;
             this.platformIndex++;
+
+            if (!isHill && col.height != 0 && random(100) < CoinSpawnChance) {
+                let lastTile = col.tiles[col.tiles.length - 1];
+                this.coins.push(new Spikes(lastTile));
+            }
        
         }
     }
@@ -259,6 +339,14 @@ class Game {
         noStroke();
 
         this.pressed = false;
+
+        this.paused = false;
+
+        window.pause = () => {
+            if (DEBUG) {
+                this.paused = !this.paused;
+            }
+        }
 
         this.score = 0;
 
@@ -326,16 +414,18 @@ class Game {
 
             this.mousePressed();
 
-            if (this.started) {
-                this.updateGame();
+            if (!this.paused) {
+                if (this.started) {
+                    this.updateGame();
+                }
+
+                this.permaUpdate();
+
+                this.particles = this.particles.filter(p => {
+                    p.draw();
+                    return !p.dead;
+                })
             }
-
-            this.permaUpdate();
-
-            this.particles = this.particles.filter(p => {
-                p.draw();
-                return !p.dead;
-            })
 
             // Animate instructions font size 
             // in and out

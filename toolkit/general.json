@@ -125,6 +125,11 @@
                     "type": "image"
                 },
                 {
+                    "key": "spikes",
+                    "header": "Spikes image",
+                    "type": "image"
+                },
+                {
                     "key": "block",
                     "header": "Ground middle image",
                     "type": "image"
@@ -294,6 +299,7 @@
             "instructions3": "Have fun!",
             "textColor": "#000",
             "coin": "assets/coin.png",
+            "spikes": "assets/spikes.png",
             "top": "assets/top.png",
             "hill": "assets/hill.png",
             "block": "assets/block.png",
