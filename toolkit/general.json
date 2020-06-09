@@ -150,6 +150,21 @@
                     "type": "image"
                 },
                 {
+                    "key": "fixedLength",
+                    "header": "Stop game after amount of time",
+                    "type": "boolean"
+                },
+                {
+                    "key": "gameLength",
+                    "header": "Amount of time to stop gaem after",
+                    "type": "range",
+                    "options": {
+                        "minValue": 5,
+                        "maxValue": 120,
+                        "stepSize": 1
+                    }
+                },
+                {
                     "key": "tap",
                     "header": "Tap sound effect",
                     "type": "sound"
@@ -304,6 +319,8 @@
             "hill": "assets/hill.png",
             "block": "assets/block.png",
             "player": "assets/player.png",
+            "fixedLength": true,
+            "gameLength": 10,
             "theme": "assets/theme.ogg",
             "volume": "0.7",
             "tap": "assets/tap.wav",

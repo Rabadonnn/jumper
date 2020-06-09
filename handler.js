@@ -25,7 +25,7 @@ window.mobile = function() {
 let Game = require("./game");
 
 let PreGameScreen = require("./pregame");
-let PostGameScreen = require("./postgame");
+let PostGameScreen = require("./postgame").postGameScreen;
 
 // Load google font from config
 WebFont.load({
@@ -47,7 +47,7 @@ $(fontCss).appendTo("head");
 
 window.soundEnabled = true;
 
-window.currentScreen = "gameScreen";
+window.currentScreen = "preGameScreen";
 window.setScreen = function(screenName) {
     window.currentScreen = screenName;
     screenManager.forceUpdate();

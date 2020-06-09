@@ -12,10 +12,11 @@ const ColumnSpeed = 450;
 const GapSpawnChance = 70;
 const PlayerSize = 90;
 const PlayerGravity = 80;
-const PlayerJumpForce = 300;
-const JumpFrames = 5;
+const PlayerJumpForce = 380;
+const JumpTime = 0.05;
 const CoinSize = 60;
 const CoinSpawnChance = 10;
+const SpikeSpawnChance = 10;
 
 class Tile {
     constructor(x, y, type) {
@@ -93,7 +94,7 @@ class Player {
         this.rect = Rectangle.FromPosition(this.x, this.y, this.size.width, this.size.height);
 
         this.acc = 0;
-        this.jumpFrames = 0;
+        this.jumpCd = JumpTime;
 
         this.dead = false;
     }
@@ -112,11 +113,11 @@ class Player {
 
     update() {
         if (mouseIsPressed) {
-            if (this.canJump) {
-                this.acc -= PlayerJumpForce * deltaTime / 1000;
-                this.jumpFrames++; 
+            if (this.canJump && !this.dead) {
+                this.jump();
+                this.jumpCd -= deltaTime / 1000;
             }
-            if (this.jumpFrames > JumpFrames) {
+            if (this.jumpCd < 0) {
                 this.canJump = false;
             }
         }
@@ -128,8 +129,15 @@ class Player {
 
     resetJump() {
         this.acc = 0;
-        this.jumpFrames = 0;
+        this.jumpCd = JumpTime;
         this.canJump = true;
+    }
+
+    jump(intensity = PlayerJumpForce) {
+        this.acc -= intensity * deltaTime / 1000;
+        if (this.jumpCd == JumpTime) {
+            this.acc -= intensity * deltaTime / 1000;
+        }
     }
 
     collisions(tiles) {
@@ -140,7 +148,7 @@ class Player {
             let rect = new Rectangle(tile.x, tile.y, TileSize, TileSize);
             rect.debug();
 
-            if (this.rect.center().x > rect.left() && this.rect.center().x < rect.right()) {
+            if (this.rect.center().x > rect.left() && this.rect.center().x < rect.right() && !this.dead) {
                 if (this.rect.bottom() > rect.top()) {
                     this.minHeight = rect.top();
                     this.rect.y = this.minHeight - this.rect.h;
@@ -160,9 +168,29 @@ class Coin {
         this.scale = 1;
         this.dead = false;
         this.tile = tile;
+
+        if (!(this instanceof Spikes)) {
+            this.growDuration = 0.3;
+            this.growCd = this.growDuration;
+            this.grow = true;
+        }
     }
 
     draw() {
+
+        if (!(this instanceof Spikes)) {
+            if (this.grow) {
+                this.scale = map(this.growCd, this.growDuration, 0, 0.9, 1.1);
+            } else {
+                this.scale = map(this.growCd, this.growDuration, 0, 1.1, 0.9);
+            }
+
+            this.growCd -= deltaTime / 1000;
+            if (this.growCd < 0) {
+                this.growCd = this.growDuration;
+                this.grow = !this.grow;
+            }
+        }
 
         push();
         translate(this.rect.center().x, this.rect.center().y);
@@ -197,6 +225,10 @@ class Game {
     constructor() {
         this.defaults();
 
+        if (config.settings.fixedLength) {
+            this.gameTimer = parseFloat(config.settings.gameLength);
+        }
+
         this.minHeight = 3;
         this.maxHeight = 5;
 
@@ -227,6 +259,7 @@ class Game {
     newPlatform() {
         this.platformIndex = 0;
         this.platformSize = floor(random(this.minSize, this.maxSize + 1));
+        this.canSpike = true;
 
         if (this.isGap == true) {
             this.isGap = false;
@@ -269,7 +302,7 @@ class Game {
         
         this.columns = this.columns.filter(col => {
             col.draw();
-            if (this.started) {
+            if (this.started && !this.finished) {
                 col.x -= ColumnSpeed * deltaTime / 1000;
             }
 
@@ -284,15 +317,28 @@ class Game {
         this.coins = this.coins.filter(coin => {
             coin.draw();
             if (intersectRect(coin.rect, this.player.rect)) {
-                coin.dead = true;
-                this.increaseScore();;
+                if (coin instanceof Spikes) {
+                    this.player.dead = true;
+                } else {
+                    this.increaseScore();
+                    coin.dead = true;
+                }
             }
             return !coin.dead;
         })
 
+        if (this.player.rect.bottom() > height - TileSize) {
+            this.finishGame(false);
+        }
+
+        if (this.player.dead) {
+            this.finishGame();
+        }
+
+
+        this.player.draw();
         this.player.update();
         this.player.collisions(tiles);
-        this.player.draw();
     }
 
     increaseScore(amt = 1) {
@@ -301,6 +347,13 @@ class Game {
     }
 
     updateGame() {
+        if (this.gameTimer && !this.finished) {
+            this.gameTimer -= deltaTime / 1000;
+            if (this.gameTimer < 0) {
+                this.gameTimer = 0;
+                this.finishGame()
+            }
+        }
         if (this.columns[this.columns.length - 1].x < width) {
             let x = this.columns[this.columns.length - 1].x + TileSize;
             let isHill = false
@@ -317,11 +370,15 @@ class Game {
             if (isHill) this.isHill = false;
             this.platformIndex++;
 
-            if (!isHill && col.height != 0 && random(100) < CoinSpawnChance) {
+            if (!isHill && col.height != 0 & this.started) {
                 let lastTile = col.tiles[col.tiles.length - 1];
-                this.coins.push(new Spikes(lastTile));
+                if (random(100) < CoinSpawnChance) {
+                    this.coins.push(new Coin(lastTile));
+                } else if (this.platformIndex > 1 && this.platformSize > 3 && this.canSpike && random(100) < SpikeSpawnChance) {
+                    this.canSpike = false;
+                    this.coins.push(new Spikes(lastTile));
+                }
             }
-       
         }
     }
 
@@ -329,9 +386,12 @@ class Game {
 
     }
 
-    finishGame() {
+    finishGame(jump = true) {
         if (!this.finished) {
             this.finished = true;
+            if (jump) {
+                this.player.jump(PlayerJumpForce * 2);
+            }
         }
     }
 
@@ -457,10 +517,21 @@ class Game {
                 textStyle(NORMAL);
                 noStroke();
                 fill(color(config.settings.textColor));
-                textAlign(CENTER);
+                textAlign(LEFT);
                 textSize(this.c_scoreFontSize);
                 textFont(config.preGameScreen.fontFamily);
-                text(this.score, width / 2, height / 6);
+                text(this.score, this.scoreFontSize, this.scoreFontSize);
+
+                if (this.gameTimer && !this.finished) {
+                    textAlign(RIGHT);
+                    fill(color(config.settings.textColor));
+                    noStroke();
+                    textSize(this.scoreFontSize);
+                    textFont(config.preGameScreen.fontFamily);
+                    let timerText = this.gameTimer.toFixed(1).toString();
+                    text(timerText, width - this.scoreFontSize * 1.5, this.scoreFontSize);
+                    textAlign(LEFT);
+                }
             }
 
             if (this.finished) {
