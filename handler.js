@@ -47,7 +47,7 @@ $(fontCss).appendTo("head");
 
 window.soundEnabled = true;
 
-window.currentScreen = "preGameScreen";
+window.currentScreen = "gameScreen";
 window.setScreen = function(screenName) {
     window.currentScreen = screenName;
     screenManager.forceUpdate();

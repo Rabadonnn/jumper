@@ -165,17 +165,22 @@
                     }
                 },
                 {
-                    "key": "tap",
-                    "header": "Tap sound effect",
-                    "type": "sound"
-                },
-                {
                     "key": "theme",
                     "header": "Background Music",
                     "type": "sound"
                 },
                 {
-                    "key": "lose",
+                    "key": "tapSound",
+                    "header": "Tap sound effect",
+                    "type": "sound"
+                },
+                {
+                    "key": "coinSound",
+                    "header": "Coin collect sound",
+                    "type": "sound"
+                },
+                {
+                    "key": "loseSound",
                     "header": "Lose sound effect",
                     "type": "sound"
                 },
@@ -301,7 +306,7 @@
             "backgroundImage": "assets/background.png",
             "titleImage": "assets/placeholder_logo.jpg",
             "titleImageSize": 200,
-            "fontFamily": "Balsamiq Sans",
+            "fontFamily": "Rosario",
             "showLeaderboardButton": true,
             "leaderboardButtonText": "Leadeboard",
             "showSoundButton": true,
@@ -309,9 +314,9 @@
             "soundDisabledIcon": "assets/sound_off.png"
         },
         "settings": {
-            "instructions1": "Tap / Spacebar to place blocks",
-            "instructions2": "Place new blocks over the old ones",
-            "instructions3": "Have fun!",
+            "instructions1": "Tap / Spacebar to jump!",
+            "instructions2": "Jump over the gaps!",
+            "instructions3": "Collect coins and dodge spikes!",
             "textColor": "#000",
             "coin": "assets/coin.png",
             "spikes": "assets/spikes.png",
@@ -320,7 +325,7 @@
             "block": "assets/block.png",
             "player": "assets/player.png",
             "fixedLength": true,
-            "gameLength": 10,
+            "gameLength": 20,
             "theme": "assets/theme.ogg",
             "volume": "0.7",
             "tap": "assets/tap.wav",

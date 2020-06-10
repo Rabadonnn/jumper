@@ -1,20 +1,22 @@
 let config = require("visual-config-exposer").default;
 
-const DEBUG = false;
+const DEBUG = true;
+
+const MOBILE = window.mobile() || window.innerWidth < 500;
 
 const TileType = {
     top: 1,
     block: 2,
     hill: 3
 };
-const TileSize = 70;
-const ColumnSpeed = 450;
+const TileSize = MOBILE ? 50 : 70;
+const ColumnSpeed = MOBILE ? 420 : 450;
 const GapSpawnChance = 70;
-const PlayerSize = 90;
-const PlayerGravity = 80;
-const PlayerJumpForce = 380;
+const PlayerSize = MOBILE ? 60 : 90;
+const PlayerGravity = MOBILE ? 60 : 80;
+const PlayerJumpForce = MOBILE ? 280 : 380;
 const JumpTime = 0.05;
-const CoinSize = 60;
+const CoinSize = MOBILE ? 40 : 60;
 const CoinSpawnChance = 10;
 const SpikeSpawnChance = 10;
 
@@ -46,23 +48,21 @@ class Column {
         this.tiles = [];
         this.dead = false;
 
-        for (let i = 0; i < this.height; i++) {
-            let y = height - TileSize - i * TileSize;
+        if (this.height != 0) {
+            let y = height - this.height * TileSize;
             let type = TileType.block;
-            if (i == this.height - 1) {
-                type = TileType.top; 
-            } 
+            type = TileType.top; 
             this.tiles.push(new Tile(this.x, y, type));
-        }
 
-        try {
-            if (isHill) {
-                let lastTile = this.tiles[this.tiles.length - 1];
-                this.tiles[this.tiles.length - 1] = new Tile(lastTile.x, lastTile.y, TileType.block);
-                this.tiles.push(new Tile(this.x, lastTile.y - TileSize, TileType.hill))
+            try {
+                if (isHill) {
+                    let lastTile = this.tiles[this.tiles.length - 1];
+                    this.tiles[this.tiles.length - 1] = new Tile(lastTile.x, lastTile.y, TileType.block);
+                    this.tiles.push(new Tile(this.x, lastTile.y - TileSize, TileType.hill))
+                }
+            } catch (err) {
+
             }
-        } catch (err) {
-
         }
     }
 
@@ -105,14 +105,14 @@ class Player {
         scale(this.scale);
         rotate(this.rotation);
         imageMode(CENTER);
-        image(this.img, 0, 0, this.rect.w, this.size.h);
+        image(this.img, 0, 0, this.rect.w, this.rect.h);
         pop();
 
         this.rect.debug();
     }
 
     update() {
-        if (mouseIsPressed) {
+        if  (mouseIsPressed || keyIsDown(32)) {
             if (this.canJump && !this.dead) {
                 this.jump();
                 this.jumpCd -= deltaTime / 1000;
@@ -137,7 +137,7 @@ class Player {
         this.acc -= intensity * deltaTime / 1000;
         if (this.jumpCd == JumpTime) {
             this.acc -= intensity * deltaTime / 1000;
-        }
+        } 
     }
 
     collisions(tiles) {
@@ -177,6 +177,11 @@ class Coin {
     }
 
     draw() {
+        if (this.tile.x < 0) {
+            this.rect.x -= ColumnSpeed * deltaTime / 1000;
+        } else {
+            this.rect.x = this.tile.x;
+        }
 
         if (!(this instanceof Spikes)) {
             if (this.grow) {
@@ -202,12 +207,6 @@ class Coin {
         pop();
 
         this.rect.debug();
-
-        if (this.tile.x < 0) {
-            this.rect.x -= ColumnSpeed * deltaTime / 1000;
-        } else {
-            this.rect.x = this.tile.x;
-        }
         this.dead = this.rect.right() < 0;
     }
 }
@@ -233,7 +232,15 @@ class Game {
         this.maxHeight = 5;
 
         this.minSize = 3;
-        this.maxSize = 4;
+        this.maxSize = 5;
+
+
+        if (MOBILE) {
+            this.minHeight += 2;
+            this.maxHeight += 2;
+            this.minSize += 1;
+            this.maxSize += 1;
+        }
 
         this.columns = [];
 
@@ -269,6 +276,9 @@ class Game {
 
         if (this.newHeight || this.newHeight == 0) {
             this.platformHeight = this.newHeight;
+            if (this.newHeight == 0 && this.platformSize >= this.maxSize - 1) {
+                this.platformSize--;
+            }
         } else {
             this.platformHeight = floor(random(this.minHeight, this.maxHeight + 1));
         }
@@ -321,6 +331,12 @@ class Game {
                     this.player.dead = true;
                 } else {
                     this.increaseScore();
+                    for (let i = 0; i < 10; i++) {
+                        let p = new Particle(coin.rect.center().x, coin.rect.center().y, randomParticleAcc(5), floor(random(60, 80)));
+                        p.image = window.images.coin;
+                        p.setLifespan(random(0.3, 0.6));
+                        this.particles.push(p);
+                    }
                     coin.dead = true;
                 }
             }
@@ -351,15 +367,13 @@ class Game {
             this.gameTimer -= deltaTime / 1000;
             if (this.gameTimer < 0) {
                 this.gameTimer = 0;
+                this.player.dead = true;
                 this.finishGame()
             }
         }
         if (this.columns[this.columns.length - 1].x < width) {
             let x = this.columns[this.columns.length - 1].x + TileSize;
             let isHill = false
-            if (this.platformIndex == this.platformSize) {
-                this.newPlatform();
-            }
             if (this.platformIndex == this.platformSize - 1) {
                 isHill = this.isHill;
             }
@@ -367,19 +381,23 @@ class Game {
             let col = new Column(x, this.platformHeight, this.platformColor, isHill);
             this.columns.push(col);
 
-            if (isHill) this.isHill = false;
-            this.platformIndex++;
-
             if (!isHill && col.height != 0 & this.started) {
                 let lastTile = col.tiles[col.tiles.length - 1];
                 if (random(100) < CoinSpawnChance) {
                     this.coins.push(new Coin(lastTile));
-                } else if (this.platformIndex > 1 && this.platformSize > 3 && this.canSpike && random(100) < SpikeSpawnChance) {
+                } else if (this.platformIndex > 1 && this.platformIndex < this.platformSize && this.platformSize > 4 && this.canSpike && random(100) < SpikeSpawnChance) {
                     this.canSpike = false;
                     this.coins.push(new Spikes(lastTile));
                 }
             }
-        }
+ 
+            if (isHill) this.isHill = false;
+            this.platformIndex++;
+
+            if (this.platformIndex >= this.platformSize) {
+                this.newPlatform();
+            }
+       }
     }
 
     onMousePress() {
@@ -390,6 +408,7 @@ class Game {
         if (!this.finished) {
             this.finished = true;
             if (jump) {
+                this.player.acc = 0;
                 this.player.jump(PlayerJumpForce * 2);
             }
         }
@@ -426,7 +445,7 @@ class Game {
     }
 
     mousePressed() {
-        if (mouseIsPressed && !this.mouse_pressed) {
+        if (mouseIsPressed || keyIsDown(32) && !this.mouse_pressed) {
             this.mouse_pressed = true;
 
             if (!this.started) {
@@ -435,7 +454,7 @@ class Game {
             if (this.started) {
                 this.onMousePress();
             }
-        } else if (!mouseIsPressed ){
+        } else if (!mouseIsPressed || !keyIsDown(32)){
             this.mouse_pressed = false;
         }        
     }
@@ -626,7 +645,7 @@ class Particle {
         this.y = y;
         this.acc = acc;
         this.size = size;
-        this.lifespan = random(0.5, 0.1);
+        this.lifespan = random(0.5, 1);
         this.iLifespan = this.lifespan;
         this.iSize = this.size;
         this.dead = false;
