@@ -50,10 +50,14 @@ window.setScreen = function(screenName) {
 window.restartGame = () => {
     game = new Game();
     
-    if (window.soundEnabled) {
-        window.sounds.theme.setLoop(true);
-        window.sounds.theme.setVolume(parseFloat(config.settings.volume));
-        window.sounds.theme.play();
+    try {
+        if (window.soundEnabled) {
+            window.sounds.theme.setLoop(true);
+            window.sounds.theme.setVolume(parseFloat(config.settings.volume));
+            window.sounds.theme.play();
+        }
+    } catch (err) {
+
     }
 
     window.setScreen("gameScreen");
@@ -86,6 +90,9 @@ function loadImages() {
     });
 }
 
+function errorLoadingSound() {
+    console.log('couldn\'t load sound');
+}
 function loadSounds() {
     window.sounds.theme = loadSound(config.settings.theme);
     window.sounds.tap = loadSound(config.settings.tap);
@@ -94,11 +101,7 @@ function loadSounds() {
 
 window.preload = function() {
     loadImages();
-    try {
-        loadSounds();
-    } catch (err) {
-        console.log("Failed to load sounds", err);
-    }
+    loadSounds();
 }
 
 // load font for p5.js
@@ -116,10 +119,14 @@ window.setup = function() {
 }
 
 window.draw = function() {
-    if (window.currentScreen != "gameScreen" && window.sounds.theme.isPlaying()) {
-        window.sounds.theme.stop();
-    } else if (window.currentScreen == "gameScreen" && !window.sounds.theme.isPlaying() && window.soundEnabled) {
-        window.sounds.theme.play();
+    try {
+        if (window.currentScreen != "gameScreen" && window.sounds.theme.isPlaying()) {
+            window.sounds.theme.stop();
+        } else if (window.currentScreen == "gameScreen" && !window.sounds.theme.isPlaying() && window.soundEnabled) {
+            window.sounds.theme.play();
+        }
+    } catch (err) {
+
     }
     game.draw();
 }

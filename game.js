@@ -404,6 +404,8 @@ class Game {
                     let ft = new FloatingText(`+${ScorePerCoin}`, pos.x, pos.y, acc, floor(random(30, 40)), ScoreTextColor);
                     this.particles.push(ft);
 
+                    playSound(window.sounds.tap);
+
                     coin.dead = true;
                 }
             }
@@ -496,6 +498,7 @@ class Game {
     finishGame(jump = true) {
         if (!this.finished) {
             this.finished = true;
+            playSound(window.sounds.lose);
             if (jump) {
                 this.player.acc = 0;
                 this.player.jump(PlayerJumpForce * 2);
