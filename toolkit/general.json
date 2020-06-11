@@ -120,14 +120,28 @@
                     "type": "color"
                 },
                 {
-                    "key": "coin",
-                    "header": "Coin image",
-                    "type": "image"
+                    "key": "coins",
+                    "header": "Coin images",
+                    "type": "array",
+                    "fields": [
+                        {
+                            "key": "coin1",
+                            "header": "Coin 1",
+                            "type": "image"
+                        }
+                    ]
                 },
                 {
                     "key": "spikes",
-                    "header": "Spikes image",
-                    "type": "image"
+                    "header": "Spike images",
+                    "type": "array",
+                    "fields": [
+                        {
+                            "key": "spikes1",
+                            "header": "Spikes 1",
+                            "type": "image"
+                        }
+                    ]
                 },
                 {
                     "key": "block",
@@ -318,8 +332,12 @@
             "instructions2": "Jump over the gaps!",
             "instructions3": "Collect coins and dodge spikes!",
             "textColor": "#000",
-            "coin": "assets/coin.png",
-            "spikes": "assets/spikes.png",
+            "coins": {
+                "coin1": "assets/coin.png"
+            },
+            "spikes": {
+                "spikes1": "assets/spikes.png"
+            },
             "top": "assets/top.png",
             "hill": "assets/hill.png",
             "block": "assets/block.png",

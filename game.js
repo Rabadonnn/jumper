@@ -17,8 +17,8 @@ const PlayerGravity = MOBILE ? 60 : 80;
 const PlayerJumpForce = MOBILE ? 280 : 380;
 const JumpTime = 0.05;
 const CoinSize = MOBILE ? 40 : 60;
-const CoinSpawnChance = 10;
-const SpikeSpawnChance = 10;
+const CoinSpawnChance = 30;
+const SpikeSpawnChance = 70;
 
 class Tile {
     constructor(x, y, type) {
@@ -71,7 +71,7 @@ class Column {
         this.tiles.map(tile => {
             tile.x = this.x;
             tile.draw();
-        })
+        });
 
         if (DEBUG) {
             fill(this.color);
@@ -161,7 +161,7 @@ class Player {
 
 class Coin {
     constructor(tile) {
-        this.img = window.images.coin;
+        this.img = randomFromArray(window.images.coins);
         this.size = calculateAspectRatioFit(this.img.width, this.img.height, CoinSize, CoinSize);
         this.rect = Rectangle.FromPosition(tile.x + TileSize / 2, tile.y - TileSize, this.size.width, this.size.height);
         this.rotation = 0;
@@ -214,7 +214,7 @@ class Coin {
 class Spikes extends Coin {
     constructor(tile) {
         super(tile);
-        this.img = window.images.spikes;
+        this.img = randomFromArray(window.images.spikes);
         this.size = calculateAspectRatioFit(this.img.width, this.img.height, TileSize, TileSize);
         this.rect = new Rectangle(tile.x + TileSize / 2 - this.size.width / 2, tile.y - this.size.height, this.size.width, this.size.height);
     }
@@ -266,7 +266,6 @@ class Game {
     newPlatform() {
         this.platformIndex = 0;
         this.platformSize = floor(random(this.minSize, this.maxSize + 1));
-        this.canSpike = true;
 
         if (this.isGap == true) {
             this.isGap = false;
@@ -290,6 +289,10 @@ class Game {
         
         if (this.newHeight > this.platformHeight && !this.isGap) {
             this.isHill = true;
+        }
+
+        if (this.newHeight == this.platformHeight && this.started) {
+            this.canSpike = true;
         }
 
         this.platformColor = this.platformHeight == 0 ? color(0) : color(random(255),random(255),random(255));
@@ -333,7 +336,7 @@ class Game {
                     this.increaseScore();
                     for (let i = 0; i < 10; i++) {
                         let p = new Particle(coin.rect.center().x, coin.rect.center().y, randomParticleAcc(5), floor(random(60, 80)));
-                        p.image = window.images.coin;
+                        p.image = coin.img;
                         p.setLifespan(random(0.3, 0.6));
                         this.particles.push(p);
                     }
@@ -374,10 +377,17 @@ class Game {
         if (this.columns[this.columns.length - 1].x < width) {
             let x = this.columns[this.columns.length - 1].x + TileSize;
             let isHill = false
-            if (this.platformIndex == this.platformSize - 1) {
+
+            if (this.platformIndex >= this.platformSize) {
+                this.newPlatform()
+            }
+
+            this.platformIndex++;
+
+            if (this.platformIndex == this.platformSize) {
                 isHill = this.isHill;
             }
-            
+
             let col = new Column(x, this.platformHeight, this.platformColor, isHill);
             this.columns.push(col);
 
@@ -385,19 +395,14 @@ class Game {
                 let lastTile = col.tiles[col.tiles.length - 1];
                 if (random(100) < CoinSpawnChance) {
                     this.coins.push(new Coin(lastTile));
-                } else if (this.platformIndex > 1 && this.platformIndex < this.platformSize && this.platformSize > 4 && this.canSpike && random(100) < SpikeSpawnChance) {
+                } else if (this.platformIndex > 2 && random(100) < SpikeSpawnChance && this.canSpike) {
                     this.canSpike = false;
                     this.coins.push(new Spikes(lastTile));
                 }
             }
- 
-            if (isHill) this.isHill = false;
-            this.platformIndex++;
 
-            if (this.platformIndex >= this.platformSize) {
-                this.newPlatform();
-            }
-       }
+            if (isHill) this.isHill = false;
+        }
     }
 
     onMousePress() {
@@ -567,8 +572,12 @@ class Game {
 // Helper functions
 
 function playSound(sound) {
-    if (window.soundEnabled) {
-        sound.play();
+    try {   
+        if (window.soundEnabled) {
+            sound.play();
+        }
+    } catch (err) {
+        console.log("error playing sound");
     }
 }
 
