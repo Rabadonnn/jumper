@@ -1,6 +1,6 @@
 let config = require("visual-config-exposer").default;
 
-const DEBUG = true;
+const DEBUG = false;
 
 const MOBILE = window.mobile() || window.innerWidth < 500;
 
@@ -9,16 +9,20 @@ const TileType = {
     block: 2,
     hill: 3
 };
-const TileSize = MOBILE ? 50 : 70;
+const TileSize = MOBILE ? Math.floor(window.innerWidth / 8) : 70;
 const ColumnSpeed = MOBILE ? 420 : 450;
 const GapSpawnChance = 70;
-const PlayerSize = MOBILE ? 60 : 90;
+const PlayerSize = Math.floor(TileSize * 1.3);
 const PlayerGravity = MOBILE ? 60 : 80;
 const PlayerJumpForce = MOBILE ? 280 : 380;
 const JumpTime = 0.05;
 const CoinSize = MOBILE ? 40 : 60;
 const CoinSpawnChance = 30;
 const SpikeSpawnChance = 70;
+const MinTopPlatformCd = 4;
+const MaxTopPlatformCd = 10;
+const ScorePerCoin = 1;
+const ScoreTextColor = 255;
 
 class Tile {
     constructor(x, y, type) {
@@ -37,6 +41,8 @@ class Tile {
         translate(this.x, this.y);
         image(this.img, 0, 0, TileSize, TileSize);
         pop();
+
+        this.rect = new Rectangle(this.x, this.y, TileSize, TileSize);
     }
 }
 
@@ -73,7 +79,7 @@ class Column {
             tile.draw();
         });
 
-        if (DEBUG) {
+        if (DEBUG && this.color) {
             fill(this.color);
             rect(this.x, height - TileSize / 2, TileSize, TileSize / 2);
         }
@@ -97,6 +103,14 @@ class Player {
         this.jumpCd = JumpTime;
 
         this.dead = false;
+
+        this.contactX = this.rect.center().x + this.rect.w / 3;
+        this.contactX2 = this.rect.center().x - this.rect.w / 3;
+
+        /*
+         * having 2 contact points helps snapping to the platform when jumping
+         * and prevent falling from it when lading
+         */
     }
 
     draw() {
@@ -107,8 +121,6 @@ class Player {
         imageMode(CENTER);
         image(this.img, 0, 0, this.rect.w, this.rect.h);
         pop();
-
-        this.rect.debug();
     }
 
     update() {
@@ -125,6 +137,14 @@ class Player {
         this.acc += PlayerGravity * deltaTime / 1000;
         
         this.rect.y += this.acc;
+
+        if (DEBUG) {
+            fill(255, 0, 0);
+            noStroke();
+            circle(this.contactX, this.rect.bottom(), 10);
+            circle(this.contactX2, this.rect.bottom(), 10);
+        }
+        this.rect.debug();
     }
 
     resetJump() {
@@ -144,13 +164,16 @@ class Player {
         if (this.rect.bottom() > this.minHeight + 10) {
             this.canJump = false;
         }
-        tiles.map(tile => {
-            let rect = new Rectangle(tile.x, tile.y, TileSize, TileSize);
-            rect.debug();
 
-            if (this.rect.center().x > rect.left() && this.rect.center().x < rect.right() && !this.dead) {
-                if (this.rect.bottom() > rect.top()) {
-                    this.minHeight = rect.top();
+        tiles.map(tile => {
+            tile.rect.debug();
+
+            let c1 = this.contactX > tile.rect.left() && this.contactX < tile.rect.right();
+            let c2 = this.contactX2 > tile.rect.left() && this.contactX2 < tile.rect.right()
+
+            if ((c1 || c2) && !this.dead) {
+                if (this.rect.bottom() > tile.rect.top() && (tile.type == TileType.hill || this.rect.bottom() < tile.rect.bottom())) {
+                    this.minHeight = tile.rect.top();
                     this.rect.y = this.minHeight - this.rect.h;
                     this.resetJump();
                 }
@@ -163,7 +186,11 @@ class Coin {
     constructor(tile) {
         this.img = randomFromArray(window.images.coins);
         this.size = calculateAspectRatioFit(this.img.width, this.img.height, CoinSize, CoinSize);
-        this.rect = Rectangle.FromPosition(tile.x + TileSize / 2, tile.y - TileSize, this.size.width, this.size.height);
+        let y = tile.y - TileSize;
+        if (random(100) < 50) {
+            y -= TileSize;
+        }
+        this.rect = Rectangle.FromPosition(tile.x + TileSize / 2, y, this.size.width, this.size.height);
         this.rotation = 0;
         this.scale = 1;
         this.dead = false;
@@ -234,7 +261,6 @@ class Game {
         this.minSize = 3;
         this.maxSize = 5;
 
-
         if (MOBILE) {
             this.minHeight += 2;
             this.maxHeight += 2;
@@ -243,6 +269,7 @@ class Game {
         }
 
         this.columns = [];
+        this.topPlatforms = [];
 
         this.coins = [];
 
@@ -261,6 +288,8 @@ class Game {
         }
 
         this.player = new Player();
+
+        this.topPlatformCd = 3;
     }
 
     newPlatform() {
@@ -291,7 +320,7 @@ class Game {
             this.isHill = true;
         }
 
-        if (this.newHeight == this.platformHeight && this.started) {
+        if (abs(this.newHeight - this.platformHeight) <= 1 && this.started) {
             this.canSpike = true;
         }
 
@@ -299,6 +328,10 @@ class Game {
     }
 
     getNewHeight() {
+        if (!this.started) {
+            return this.minHeight + 1;
+        }
+
         var newHeight;
         if (this.platformHeight == this.minHeight) {
             newHeight = floor(random(this.minHeight, this.maxHeight));
@@ -308,6 +341,18 @@ class Game {
             newHeight = floor(random(this.minHeight, this.maxHeight + 1));
         }
         return newHeight;
+    }
+
+    newTopPlatform() {
+        let size = floor(random(this.minSize, this.maxSize + 1));
+        let height = floor(random(this.maxHeight + 2, this.maxHeight + 4));
+        for (let i = 0; i <= size; i++) {
+            let col = new Column(width + i * TileSize, height, false);
+            this.topPlatforms.push(col);
+            if (random(100) < CoinSpawnChance) {
+                this.coins.push(new Coin(col.tiles[0]));
+            }
+        }
     }
 
     permaUpdate() {
@@ -326,6 +371,16 @@ class Game {
 
             return !col.dead;
         });
+        this.topPlatforms = this.topPlatforms.filter(col => {
+            col.draw();
+            if (this.started && !this.finished) {
+                col.x -= ColumnSpeed * deltaTime / 1000;
+            }
+            if (col.height != 0) {
+                tiles.push(col.tiles[0]);
+            }
+            return !col.dead;
+        })
 
         this.coins = this.coins.filter(coin => {
             coin.draw();
@@ -340,11 +395,25 @@ class Game {
                         p.setLifespan(random(0.3, 0.6));
                         this.particles.push(p);
                     }
+                    
+                    let pos = randomPointInRect(coin.rect);
+                    let acc = {
+                        x: random(-3, 3),
+                        y: random(-5, -2)
+                    };
+                    let ft = new FloatingText(`+${ScorePerCoin}`, pos.x, pos.y, acc, floor(random(30, 40)), ScoreTextColor);
+                    this.particles.push(ft);
+
                     coin.dead = true;
                 }
             }
+            tiles.map(tile => {
+               if (!(coin instanceof Spikes) && intersectRect(coin.rect, tile.rect)) {
+                   coin.dead = true;
+               } 
+            });
             return !coin.dead;
-        })
+        });
 
         if (this.player.rect.bottom() > height - TileSize) {
             this.finishGame(false);
@@ -360,12 +429,19 @@ class Game {
         this.player.collisions(tiles);
     }
 
-    increaseScore(amt = 1) {
+    increaseScore(amt = ScorePerCoin) {
         this.score += amt;
         this.c_scoreFontSize = this.scoreFontSize * 1.8;
     }
 
     updateGame() {
+
+        this.topPlatformCd -= deltaTime / 1000;
+        if (this.topPlatformCd < 0 && this.platformHeight < this.maxHeight - 1) {
+            this.topPlatformCd = floor(random(MinTopPlatformCd, MaxTopPlatformCd));
+            this.newTopPlatform();
+        }
+
         if (this.gameTimer && !this.finished) {
             this.gameTimer -= deltaTime / 1000;
             if (this.gameTimer < 0) {
@@ -374,7 +450,15 @@ class Game {
                 this.finishGame()
             }
         }
-        if (this.columns[this.columns.length - 1].x < width) {
+
+        let lastCol;
+        this.columns.map(col => {
+            if (col.height <= this.maxHeight + 1) {
+                lastCol = col;
+            }
+        });
+
+        if (lastCol.x < width) {
             let x = this.columns[this.columns.length - 1].x + TileSize;
             let isHill = false
 
@@ -395,7 +479,7 @@ class Game {
                 let lastTile = col.tiles[col.tiles.length - 1];
                 if (random(100) < CoinSpawnChance) {
                     this.coins.push(new Coin(lastTile));
-                } else if (this.platformIndex > 2 && random(100) < SpikeSpawnChance && this.canSpike) {
+                } else if (this.platformIndex > 2 && this.platformIndex < this.platformSize - 1 && random(100) < SpikeSpawnChance && this.canSpike) {
                     this.canSpike = false;
                     this.coins.push(new Spikes(lastTile));
                 }
@@ -592,6 +676,16 @@ function setGradient(x, y, w, h, c1, c2) {
         stroke(c);
         line(x, i, x + w, i);
     }
+}
+
+function randomPointInRect(rect, floor_ = true) {
+    let x = random(rect.x, rect.right());
+    let y = random(rect.y, rect.bottom());
+    if (floor) {
+        x = floor(x);
+        y = floor(y);
+    }
+    return { x, y }
 }
 
 class FloatingText {
