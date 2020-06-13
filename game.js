@@ -1,6 +1,6 @@
 let config = require("visual-config-exposer").default;
 
-const DEBUG = true;
+const DEBUG = false;
 
 const MOBILE = window.mobile() || window.innerWidth < 500;
 
