@@ -1,6 +1,6 @@
 let config = require("visual-config-exposer").default;
 
-const DEBUG = false;
+const DEBUG = true;
 
 const MOBILE = window.mobile() || window.innerWidth < 500;
 
@@ -9,20 +9,34 @@ const TileType = {
     block: 2,
     hill: 3
 };
-const TileSize = MOBILE ? Math.floor(window.innerWidth / 8) : 70;
-const ColumnSpeed = MOBILE ? 420 : 450;
+const TileSize = Math.floor(getTileSize());
+const ColumnSpeed = MOBILE ? 370 : 450;
 const GapSpawnChance = 70;
 const PlayerSize = Math.floor(TileSize * 1.3);
-const PlayerGravity = MOBILE ? 60 : 80;
-const PlayerJumpForce = MOBILE ? 280 : 380;
+const PlayerGravity = Math.floor(TileSize * 1.4) 
+const PlayerJumpForce = Math.floor(TileSize * 6.3);
 const JumpTime = 0.05;
-const CoinSize = MOBILE ? 40 : 60;
+const CoinSize = TileSize * 0.8;
 const CoinSpawnChance = 30;
 const SpikeSpawnChance = 70;
 const MinTopPlatformCd = 4;
 const MaxTopPlatformCd = 10;
 const ScorePerCoin = 1;
 const ScoreTextColor = 255;
+
+function getTileSize() {
+    if (MOBILE) {
+        return window.innerWidth / 8;
+    } else {
+        if (window.innerHeight < 600) {
+            return window.innerHeight / 10; 
+        }
+        if (window.innerWidth < 600) {
+            return window.innerWidth / 10;
+        }
+    }
+    return 70;
+}
 
 class Tile {
     constructor(x, y, type) {
@@ -207,7 +221,7 @@ class Coin {
         if (this.tile.x < 0) {
             this.rect.x -= ColumnSpeed * deltaTime / 1000;
         } else {
-            this.rect.x = this.tile.x;
+            this.rect.x = this.tile.x + TileSize / 2 - this.size.width / 2;
         }
 
         if (!(this instanceof Spikes)) {
@@ -262,10 +276,17 @@ class Game {
         this.maxSize = 5;
 
         if (MOBILE) {
-            this.minHeight += 2;
-            this.maxHeight += 2;
+            if (!height < 500) {
+                this.minHeight += 2;
+                this.maxHeight += 2;
+            }
             this.minSize += 1;
             this.maxSize += 1;
+        }
+
+        if (height < 600) {
+            this.minHeight -= 1;
+            this.maxHeight -= 1;
         }
 
         this.columns = [];
@@ -298,6 +319,9 @@ class Game {
 
         if (this.isGap == true) {
             this.isGap = false;
+            if (MOBILE) {
+                this.platformSize -= 1;
+            }
         } else {
             this.isGap = this.started && random(100) < GapSpawnChance ? true : false;
         }
@@ -345,7 +369,7 @@ class Game {
 
     newTopPlatform() {
         let size = floor(random(this.minSize, this.maxSize + 1));
-        let height = floor(random(this.maxHeight + 2, this.maxHeight + 4));
+        let height = floor(random(this.maxHeight + 1, this.maxHeight + 3));
         for (let i = 0; i <= size; i++) {
             let col = new Column(width + i * TileSize, height, false);
             this.topPlatforms.push(col);
@@ -358,6 +382,7 @@ class Game {
     permaUpdate() {
         let tiles = [];
         
+        let colsOnScreen = 0;
         this.columns = this.columns.filter(col => {
             col.draw();
             if (this.started && !this.finished) {
@@ -367,10 +392,26 @@ class Game {
             if (col.height != 0) {
                 let lastTileInColumn = col.tiles[col.tiles.length - 1];
                 tiles.push(lastTileInColumn);
+
+                if (DEBUG && lastTileInColumn.x > 0 && lastTileInColumn.x < width) {
+                    colsOnScreen++;
+                }
             }
 
             return !col.dead;
         });
+
+        if (DEBUG) {
+            textFont("Inconsolata");
+            textSize(14);
+            fill(0);
+            text(`Tiles on screen: ${colsOnScreen}`, 20, 60);
+            text(`Object count: ${this.columns.length + this.coins.length + 1 + this.particles.length}`, 20, 80);
+            text(`TileSize: ${TileSize}`, 20, 100);
+            text(`PlayerGravity: ${PlayerGravity}`, 20, 120);
+            text(`PlayerJumpForce: ${PlayerJumpForce}`, 20, 140);
+        }
+
         this.topPlatforms = this.topPlatforms.filter(col => {
             col.draw();
             if (this.started && !this.finished) {

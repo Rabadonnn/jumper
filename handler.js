@@ -42,6 +42,7 @@ $(fontCss).appendTo("head");
 window.soundEnabled = true;
 
 window.currentScreen = "preGameScreen";
+
 window.setScreen = function(screenName) {
     window.currentScreen = screenName;
     screenManager.forceUpdate();
@@ -154,4 +155,3 @@ let screenManager = ReactDOM.render(
 )
 
 let p5sketch = new p5(null, document.getElementById("game-container"));
-
