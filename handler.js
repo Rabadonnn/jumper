@@ -82,6 +82,7 @@ function loadImages() {
     window.images.block = loadImage(config.settings.block);
     window.images.hill = loadImage(config.settings.hill);
     window.images.player = loadImage(config.settings.player);
+    window.images.heart = loadImage(config.settings.heart);
 
     window.images.coins = Object.keys(config.settings.coins).map(k => {
         return loadImage(config.settings.coins[k]);
@@ -96,8 +97,9 @@ function errorLoadingSound() {
 }
 function loadSounds() {
     window.sounds.theme = loadSound(config.settings.theme);
-    window.sounds.tap = loadSound(config.settings.tap);
+    window.sounds.coinSound = loadSound(config.settings.coinSound);
     window.sounds.lose = loadSound(config.settings.lose);
+    window.sounds.hit = loadSound(config.settings.hitSound);
 }
 
 window.preload = function() {

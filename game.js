@@ -23,6 +23,9 @@ const MinTopPlatformCd = 4;
 const MaxTopPlatformCd = 10;
 const ScorePerCoin = 1;
 const ScoreTextColor = 255;
+const HeartCount = config.settings.livesCount;
+const MaxScore = config.settings.maxScore;
+const HeartSize = MOBILE ? 30 : 40;
 
 function getTileSize() {
     if (MOBILE) {
@@ -258,6 +261,7 @@ class Spikes extends Coin {
         this.img = randomFromArray(window.images.spikes);
         this.size = calculateAspectRatioFit(this.img.width, this.img.height, TileSize, TileSize);
         this.rect = new Rectangle(tile.x + TileSize / 2 - this.size.width / 2, tile.y - this.size.height, this.size.width, this.size.height);
+        this.canDmg = true;
     }
 }
 
@@ -267,6 +271,12 @@ class Game {
 
         if (config.settings.fixedLength) {
             this.gameTimer = parseFloat(config.settings.gameLength);
+        }
+
+        if (config.settings.lives) {
+            this.heartImg = window.images.heart;
+            this.heartSize = calculateAspectRatioFit(this.heartImg.width, this.heartImg.height, HeartSize, HeartSize);
+            this.hp = HeartCount;
         }
 
         this.minHeight = 3;
@@ -427,7 +437,29 @@ class Game {
             coin.draw();
             if (intersectRect(coin.rect, this.player.rect)) {
                 if (coin instanceof Spikes) {
-                    this.player.dead = true;
+                    if (this.hp) {
+                        if (coin.canDmg) {
+                            
+                            let pos = this.getHeartPos(this.hp);
+                            for (let i = 0; i < 5; i++) {
+                                let p = new Particle(pos.x, pos.y, randomParticleAcc(3), floor(random(30, 40)));
+                                p.setLifespan(random(0.3, 0.7));
+                                p.image = window.images.heart;
+                                this.particles.push(p);
+                            }
+
+                            playSound(window.sounds.hit);
+
+                            this.hp--;
+                            coin.canDmg = false;
+                            
+                            if (this.hp <= 0) {
+                                this.player.dead = true;
+                            }
+                        }
+                    } else {
+                        this.player.dead = true;
+                    }
                 } else {
                     this.increaseScore();
                     for (let i = 0; i < 10; i++) {
@@ -445,7 +477,7 @@ class Game {
                     let ft = new FloatingText(`+${ScorePerCoin}`, pos.x, pos.y, acc, floor(random(30, 40)), ScoreTextColor);
                     this.particles.push(ft);
 
-                    playSound(window.sounds.tap);
+                    playSound(window.sounds.coinSound);
 
                     coin.dead = true;
                 }
@@ -475,6 +507,10 @@ class Game {
     increaseScore(amt = ScorePerCoin) {
         this.score += amt;
         this.c_scoreFontSize = this.scoreFontSize * 1.8;
+
+        if (this.score >= MaxScore) {
+            this.finishGame();
+        }
     }
 
     updateGame() {
@@ -530,6 +566,20 @@ class Game {
 
             if (isHill) this.isHill = false;
         }
+
+        if (this.hp) {
+            for (let i = 0; i < this.hp; i++) {
+                let pos = this.getHeartPos(i);
+                image(this.heartImg, pos.x, pos.y, this.heartSize.width, this.heartSize.height);
+            }
+        }
+    }
+
+    getHeartPos(i) {
+        return { 
+            x: width / 2 - this.hp - 1 * (HeartSize + 5) + i * (HeartSize + 5),
+            y: HeartSize + 2
+        };
     }
 
     onMousePress() {

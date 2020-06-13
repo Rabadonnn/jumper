@@ -164,6 +164,46 @@
                     "type": "image"
                 },
                 {
+                    "key": "showSpikes",
+                    "header": "Show spikes",
+                    "type": "boolean"
+                },
+                {
+                    "key": "lives",
+                    "header": "Use health",
+                    "type": "boolean"
+                },
+                {
+                    "key": "heart",
+                    "header": "Heart image",
+                    "type": "image"
+                },
+                {
+                    "key": "livesCount",
+                    "header": "Health count",
+                    "type": "range",
+                    "options": {
+                        "minValue": 2, 
+                        "maxValue": 5,
+                        "stepSize": 1
+                    }
+                },
+                {
+                    "key": "winScore",
+                    "header": "Win after hitting x score",
+                    "type": "boolean"
+                },
+                {
+                    "key": "maxScore",
+                    "header": "Score required to win",
+                    "type": "range",
+                    "options": {
+                        "minValue": 5,
+                        "maxValue": 500,
+                        "stepSize": 1
+                    }
+                },
+                {
                     "key": "fixedLength",
                     "header": "Stop game after amount of time",
                     "type": "boolean"
@@ -184,13 +224,13 @@
                     "type": "sound"
                 },
                 {
-                    "key": "tapSound",
-                    "header": "Tap sound effect",
+                    "key": "coinSound",
+                    "header": "Coin collect sound",
                     "type": "sound"
                 },
                 {
-                    "key": "coinSound",
-                    "header": "Coin collect sound",
+                    "key": "hitSound",
+                    "header": "Hit sound",
                     "type": "sound"
                 },
                 {
@@ -342,12 +382,19 @@
             "hill": "assets/hill.png",
             "block": "assets/block.png",
             "player": "assets/player.png",
+            "showSpikes": true,
+            "lives": true,
+            "heart": "assets/heart.png",
+            "livesCount": 3,
+            "winScore": true,
+            "maxScore": 15,
             "fixedLength": true,
             "gameLength": 20,
             "theme": "assets/theme.ogg",
             "volume": "0.7",
-            "tap": "assets/tap.wav",
-            "lose": "assets/lose.wav"
+            "coinSound": "assets/tap.wav",
+            "lose": "assets/lose.wav",
+            "hitSound": "assets/hit.wav"
         },
         "postGameScreen": {
             "scoreText": "Your score is: ",
