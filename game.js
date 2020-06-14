@@ -321,6 +321,11 @@ class Game {
         this.player = new Player();
 
         this.topPlatformCd = 3;
+
+        this.startTween = false;
+        this.messageTextSize = 0;
+
+        this.message;
     }
 
     newPlatform() {
@@ -498,7 +503,6 @@ class Game {
             this.finishGame();
         }
 
-
         this.player.draw();
         this.player.update();
         this.player.collisions(tiles);
@@ -507,14 +511,9 @@ class Game {
     increaseScore(amt = ScorePerCoin) {
         this.score += amt;
         this.c_scoreFontSize = this.scoreFontSize * 1.8;
-
-        if (this.score >= MaxScore) {
-            this.finishGame();
-        }
     }
 
     updateGame() {
-
         this.topPlatformCd -= deltaTime / 1000;
         if (this.topPlatformCd < 0 && this.platformHeight < this.maxHeight - 1) {
             this.topPlatformCd = floor(random(MinTopPlatformCd, MaxTopPlatformCd));
@@ -573,6 +572,34 @@ class Game {
                 image(this.heartImg, pos.x, pos.y, this.heartSize.width, this.heartSize.height);
             }
         }
+
+        if (this.finished) {
+            if (!this.startTween) {
+                shifty.tween({
+                    from: {
+                        size: this.messageTextSize
+                    },
+                    to: {
+                        size: this.scoreFontSize * 1.2, 
+                    },
+                    duration: (this.delayBeforeExit * 0.8) * 1000,
+                    easing: "elastic",
+                    step: state => {
+                        this.messageTextSize = state.size
+                    }
+                });
+                this.startTween = true;
+            }
+
+            textAlign(CENTER);
+            textStyle(BOLD);
+            textFont(config.preGameScreen.fontFamily);
+            fill(color(config.settings.messageTextColor));
+            noStroke();
+            textSize(this.messageTextSize);
+            text(this.message, width / 2, height / 4);
+            textStyle(NORMAL);
+        }
     }
 
     getHeartPos(i) {
@@ -593,6 +620,21 @@ class Game {
             if (jump) {
                 this.player.acc = 0;
                 this.player.jump(PlayerJumpForce * 2);
+            }
+
+            if (this.score >= MaxScore) {
+                this.message = config.settings.winMessage;
+                return;
+            }
+
+            if (this.gameTimer && this.gameTimer <= 0) {
+                this.message = config.settings.timeUpMessage;
+                return;
+            }
+
+            if (this.score < MaxScore) {
+                this.message = config.settings.loseMessage;
+                return;
             }
         }
     }
@@ -677,11 +719,11 @@ class Game {
             this.mousePressed();
 
             if (!this.paused) {
+                this.permaUpdate();
+
                 if (this.started) {
                     this.updateGame();
                 }
-
-                this.permaUpdate();
 
                 this.particles = this.particles.filter(p => {
                     p.draw();

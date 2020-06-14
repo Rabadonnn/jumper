@@ -219,6 +219,26 @@
                     }
                 },
                 {
+                    "key": "messageTextColor",
+                    "header": "Message text color",
+                    "type": "color"
+                },
+                {
+                    "key": "winMessage",
+                    "header": "Win message",
+                    "type": "text"
+                },
+                {
+                    "key": "loseMessage",
+                    "header": "Lose message",
+                    "type": "text"
+                },
+                {
+                    "key": "timeUpMessage",
+                    "header": "Time up message",
+                    "type": "text"
+                },
+                {
                     "key": "theme",
                     "header": "Background Music",
                     "type": "sound"
@@ -390,6 +410,10 @@
             "maxScore": 15,
             "fixedLength": true,
             "gameLength": 20,
+            "messageTextColor": "#ffffff",
+            "winMessage": "Congratulations",
+            "loseMessage": "Better luck next time!",
+            "timeUpMessage": "Time Up!",
             "theme": "assets/theme.ogg",
             "volume": "0.7",
             "coinSound": "assets/tap.wav",

@@ -92,9 +92,6 @@ function loadImages() {
     });
 }
 
-function errorLoadingSound() {
-    console.log('couldn\'t load sound');
-}
 function loadSounds() {
     window.sounds.theme = loadSound(config.settings.theme);
     window.sounds.coinSound = loadSound(config.settings.coinSound);
