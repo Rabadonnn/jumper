@@ -7,13 +7,13 @@ const MOBILE = window.mobile() || window.innerWidth < 500;
 const TileType = {
     top: 1,
     block: 2,
-    hill: 3
+    hill: 3,
 };
 const TileSize = Math.floor(getTileSize());
 const ColumnSpeed = MOBILE ? 370 : 450;
 const GapSpawnChance = 70;
 const PlayerSize = Math.floor(TileSize * 1.3);
-const PlayerGravity = Math.floor(TileSize * 1.4) 
+const PlayerGravity = Math.floor(TileSize * 1.4);
 const PlayerJumpForce = Math.floor(TileSize * 6.3);
 const JumpTime = 0.05;
 const CoinSize = TileSize * 0.8;
@@ -32,7 +32,7 @@ function getTileSize() {
         return window.innerWidth / 8;
     } else {
         if (window.innerHeight < 600) {
-            return window.innerHeight / 10; 
+            return window.innerHeight / 10;
         }
         if (window.innerWidth < 600) {
             return window.innerWidth / 10;
@@ -74,24 +74,22 @@ class Column {
         if (this.height != 0) {
             let y = height - this.height * TileSize;
             let type = TileType.block;
-            type = TileType.top; 
+            type = TileType.top;
             this.tiles.push(new Tile(this.x, y, type));
 
             try {
                 if (isHill) {
                     let lastTile = this.tiles[this.tiles.length - 1];
                     this.tiles[this.tiles.length - 1] = new Tile(lastTile.x, lastTile.y, TileType.block);
-                    this.tiles.push(new Tile(this.x, lastTile.y - TileSize, TileType.hill))
+                    this.tiles.push(new Tile(this.x, lastTile.y - TileSize, TileType.hill));
                 }
-            } catch (err) {
-
-            }
+            } catch (err) {}
         }
     }
 
     draw() {
         this.x = floor(this.x);
-        this.tiles.map(tile => {
+        this.tiles.map((tile) => {
             tile.x = this.x;
             tile.draw();
         });
@@ -141,7 +139,7 @@ class Player {
     }
 
     update() {
-        if  (mouseIsPressed || keyIsDown(32)) {
+        if (mouseIsPressed || keyIsDown(32)) {
             if (this.canJump && !this.dead) {
                 this.jump();
                 this.jumpCd -= deltaTime / 1000;
@@ -151,8 +149,8 @@ class Player {
             }
         }
 
-        this.acc += PlayerGravity * deltaTime / 1000;
-        
+        this.acc += (PlayerGravity * deltaTime) / 1000;
+
         this.rect.y += this.acc;
 
         if (DEBUG) {
@@ -171,10 +169,10 @@ class Player {
     }
 
     jump(intensity = PlayerJumpForce) {
-        this.acc -= intensity * deltaTime / 1000;
+        this.acc -= (intensity * deltaTime) / 1000;
         if (this.jumpCd == JumpTime) {
-            this.acc -= intensity * deltaTime / 1000;
-        } 
+            this.acc -= (intensity * deltaTime) / 1000;
+        }
     }
 
     collisions(tiles) {
@@ -182,14 +180,17 @@ class Player {
             this.canJump = false;
         }
 
-        tiles.map(tile => {
+        tiles.map((tile) => {
             tile.rect.debug();
 
             let c1 = this.contactX > tile.rect.left() && this.contactX < tile.rect.right();
-            let c2 = this.contactX2 > tile.rect.left() && this.contactX2 < tile.rect.right()
+            let c2 = this.contactX2 > tile.rect.left() && this.contactX2 < tile.rect.right();
 
             if ((c1 || c2) && !this.dead) {
-                if (this.rect.bottom() > tile.rect.top() && (tile.type == TileType.hill || this.rect.bottom() < tile.rect.bottom())) {
+                if (
+                    this.rect.bottom() > tile.rect.top() &&
+                    (tile.type == TileType.hill || this.rect.bottom() < tile.rect.bottom())
+                ) {
                     this.minHeight = tile.rect.top();
                     this.rect.y = this.minHeight - this.rect.h;
                     this.resetJump();
@@ -222,7 +223,7 @@ class Coin {
 
     draw() {
         if (this.tile.x < 0) {
-            this.rect.x -= ColumnSpeed * deltaTime / 1000;
+            this.rect.x -= (ColumnSpeed * deltaTime) / 1000;
         } else {
             this.rect.x = this.tile.x + TileSize / 2 - this.size.width / 2;
         }
@@ -260,7 +261,12 @@ class Spikes extends Coin {
         super(tile);
         this.img = randomFromArray(window.images.spikes);
         this.size = calculateAspectRatioFit(this.img.width, this.img.height, TileSize, TileSize);
-        this.rect = new Rectangle(tile.x + TileSize / 2 - this.size.width / 2, tile.y - this.size.height, this.size.width, this.size.height);
+        this.rect = new Rectangle(
+            tile.x + TileSize / 2 - this.size.width / 2,
+            tile.y - this.size.height,
+            this.size.width,
+            this.size.height
+        );
         this.canDmg = true;
     }
 }
@@ -306,7 +312,7 @@ class Game {
 
         this.newPlatform();
         for (let i = 0; i < width; i += TileSize) {
-            let isHill = false
+            let isHill = false;
             if (this.platformIndex == this.platformSize) {
                 this.newPlatform();
             }
@@ -354,7 +360,7 @@ class Game {
         } else {
             this.newHeight = this.getNewHeight();
         }
-        
+
         if (this.newHeight > this.platformHeight && !this.isGap) {
             this.isHill = true;
         }
@@ -363,7 +369,7 @@ class Game {
             this.canSpike = true;
         }
 
-        this.platformColor = this.platformHeight == 0 ? color(0) : color(random(255),random(255),random(255));
+        this.platformColor = this.platformHeight == 0 ? color(0) : color(random(255), random(255), random(255));
     }
 
     getNewHeight() {
@@ -375,7 +381,7 @@ class Game {
         if (this.platformHeight == this.minHeight) {
             newHeight = floor(random(this.minHeight, this.maxHeight));
         } else if (this.platformHeight == this.maxHeight) {
-            newHeight = floor(random(this.maxHeight - 1, this.maxHeight + 1))
+            newHeight = floor(random(this.maxHeight - 1, this.maxHeight + 1));
         } else {
             newHeight = floor(random(this.minHeight, this.maxHeight + 1));
         }
@@ -396,12 +402,12 @@ class Game {
 
     permaUpdate() {
         let tiles = [];
-        
+
         let colsOnScreen = 0;
-        this.columns = this.columns.filter(col => {
+        this.columns = this.columns.filter((col) => {
             col.draw();
             if (this.started && !this.finished) {
-                col.x -= ColumnSpeed * deltaTime / 1000;
+                col.x -= (ColumnSpeed * deltaTime) / 1000;
             }
 
             if (col.height != 0) {
@@ -427,24 +433,23 @@ class Game {
             text(`PlayerJumpForce: ${PlayerJumpForce}`, 20, 140);
         }
 
-        this.topPlatforms = this.topPlatforms.filter(col => {
+        this.topPlatforms = this.topPlatforms.filter((col) => {
             col.draw();
             if (this.started && !this.finished) {
-                col.x -= ColumnSpeed * deltaTime / 1000;
+                col.x -= (ColumnSpeed * deltaTime) / 1000;
             }
             if (col.height != 0) {
                 tiles.push(col.tiles[0]);
             }
             return !col.dead;
-        })
+        });
 
-        this.coins = this.coins.filter(coin => {
+        this.coins = this.coins.filter((coin) => {
             coin.draw();
             if (intersectRect(coin.rect, this.player.rect)) {
                 if (coin instanceof Spikes) {
                     if (this.hp) {
                         if (coin.canDmg) {
-                            
                             let pos = this.getHeartPos(this.hp);
                             for (let i = 0; i < 5; i++) {
                                 let p = new Particle(pos.x, pos.y, randomParticleAcc(3), floor(random(30, 40)));
@@ -457,7 +462,7 @@ class Game {
 
                             this.hp--;
                             coin.canDmg = false;
-                            
+
                             if (this.hp <= 0) {
                                 this.player.dead = true;
                             }
@@ -468,18 +473,30 @@ class Game {
                 } else {
                     this.increaseScore();
                     for (let i = 0; i < 10; i++) {
-                        let p = new Particle(coin.rect.center().x, coin.rect.center().y, randomParticleAcc(5), floor(random(60, 80)));
+                        let p = new Particle(
+                            coin.rect.center().x,
+                            coin.rect.center().y,
+                            randomParticleAcc(5),
+                            floor(random(60, 80))
+                        );
                         p.image = coin.img;
                         p.setLifespan(random(0.3, 0.6));
                         this.particles.push(p);
                     }
-                    
+
                     let pos = randomPointInRect(coin.rect);
                     let acc = {
                         x: random(-3, 3),
-                        y: random(-5, -2)
+                        y: random(-5, -2),
                     };
-                    let ft = new FloatingText(`+${ScorePerCoin}`, pos.x, pos.y, acc, floor(random(30, 40)), ScoreTextColor);
+                    let ft = new FloatingText(
+                        `+${ScorePerCoin}`,
+                        pos.x,
+                        pos.y,
+                        acc,
+                        floor(random(30, 40)),
+                        ScoreTextColor
+                    );
                     this.particles.push(ft);
 
                     playSound(window.sounds.coinSound);
@@ -487,10 +504,10 @@ class Game {
                     coin.dead = true;
                 }
             }
-            tiles.map(tile => {
-               if (!(coin instanceof Spikes) && intersectRect(coin.rect, tile.rect)) {
-                   coin.dead = true;
-               } 
+            tiles.map((tile) => {
+                if (!(coin instanceof Spikes) && intersectRect(coin.rect, tile.rect)) {
+                    coin.dead = true;
+                }
             });
             return !coin.dead;
         });
@@ -525,12 +542,12 @@ class Game {
             if (this.gameTimer < 0) {
                 this.gameTimer = 0;
                 this.player.dead = true;
-                this.finishGame()
+                this.finishGame();
             }
         }
 
         let lastCol;
-        this.columns.map(col => {
+        this.columns.map((col) => {
             if (col.height <= this.maxHeight + 1) {
                 lastCol = col;
             }
@@ -538,10 +555,10 @@ class Game {
 
         if (lastCol.x < width) {
             let x = this.columns[this.columns.length - 1].x + TileSize;
-            let isHill = false
+            let isHill = false;
 
             if (this.platformIndex >= this.platformSize) {
-                this.newPlatform()
+                this.newPlatform();
             }
 
             this.platformIndex++;
@@ -553,11 +570,16 @@ class Game {
             let col = new Column(x, this.platformHeight, this.platformColor, isHill);
             this.columns.push(col);
 
-            if (!isHill && col.height != 0 & this.started) {
+            if (!isHill && (col.height != 0) & this.started) {
                 let lastTile = col.tiles[col.tiles.length - 1];
                 if (random(100) < CoinSpawnChance) {
                     this.coins.push(new Coin(lastTile));
-                } else if (this.platformIndex > 2 && this.platformIndex < this.platformSize - 1 && random(100) < SpikeSpawnChance && this.canSpike) {
+                } else if (
+                    this.platformIndex > 2 &&
+                    this.platformIndex < this.platformSize - 1 &&
+                    random(100) < SpikeSpawnChance &&
+                    this.canSpike
+                ) {
                     this.canSpike = false;
                     this.coins.push(new Spikes(lastTile));
                 }
@@ -577,16 +599,16 @@ class Game {
             if (!this.startTween) {
                 shifty.tween({
                     from: {
-                        size: this.messageTextSize
+                        size: this.messageTextSize,
                     },
                     to: {
-                        size: this.scoreFontSize * 1.2, 
+                        size: this.scoreFontSize * 1.2,
                     },
-                    duration: (this.delayBeforeExit * 0.8) * 1000,
+                    duration: this.delayBeforeExit * 0.8 * 1000,
                     easing: "elastic",
-                    step: state => {
-                        this.messageTextSize = state.size
-                    }
+                    step: (state) => {
+                        this.messageTextSize = state.size;
+                    },
                 });
                 this.startTween = true;
             }
@@ -603,15 +625,13 @@ class Game {
     }
 
     getHeartPos(i) {
-        return { 
+        return {
             x: width / 2 - this.hp - 1 * (HeartSize + 5) + i * (HeartSize + 5),
-            y: HeartSize + 2
+            y: HeartSize + 2,
         };
     }
 
-    onMousePress() {
-
-    }
+    onMousePress() {}
 
     finishGame(jump = true) {
         if (!this.finished) {
@@ -650,15 +670,15 @@ class Game {
             if (DEBUG) {
                 this.paused = !this.paused;
             }
-        }
+        };
 
         this.score = 0;
 
         // turn this var to true to end the game
         this.finished = false;
-        
+
         this.particles = [];
-    
+
         this.instructionsFontSize = height / 30;
         this.scoreFontSize = height / 20;
         this.delayBeforeExit = 1.2;
@@ -670,7 +690,7 @@ class Game {
     }
 
     mousePressed() {
-        if (mouseIsPressed || keyIsDown(32) && !this.mouse_pressed) {
+        if (mouseIsPressed || (keyIsDown(32) && !this.mouse_pressed)) {
             this.mouse_pressed = true;
 
             if (!this.started) {
@@ -679,34 +699,46 @@ class Game {
             if (this.started) {
                 this.onMousePress();
             }
-        } else if (!mouseIsPressed || !keyIsDown(32)){
+        } else if (!mouseIsPressed || !keyIsDown(32)) {
             this.mouse_pressed = false;
-        }        
+        }
     }
 
     calcBgImageSize() {
         // background image size calculations
         this.bgImage = window.images.background;
-        let originalRatios = {
-            width: window.innerWidth / this.bgImage.width,
-            height: window.innerHeight / this.bgImage.height
-        };
- 
-        let coverRatio = Math.max(originalRatios.width, originalRatios.height);
-        this.bgImageWidth = this.bgImage.width * coverRatio;
-        this.bgImageHeight = this.bgImage.height * coverRatio;
+        if (config.preGameScreen.backgroundMode == "cover") {
+            let originalRatios = {
+                width: window.innerWidth / this.bgImage.width,
+                height: window.innerHeight / this.bgImage.height,
+            };
+
+            let coverRatio = Math.max(originalRatios.width, originalRatios.height);
+            this.bgImageWidth = this.bgImage.width * coverRatio;
+            this.bgImageHeight = this.bgImage.height * coverRatio;
+        } else {
+            let size = calculateAspectRatioFit(this.bgImage.width, this.bgImage.height, width, height);
+            this.bgImageWidth = size.width;
+            this.bgImageHeight = size.height;
+        }
     }
 
     draw() {
-        clear();    
+        background(color(config.preGameScreen.backgroundColor));
         try {
-            image(this.bgImage, width / 2 - this.bgImageWidth / 2, height / 2 - this.bgImageHeight / 2, this.bgImageWidth, this.bgImageHeight);
+            image(
+                this.bgImage,
+                width / 2 - this.bgImageWidth / 2,
+                height / 2 - this.bgImageHeight / 2,
+                this.bgImageWidth,
+                this.bgImageHeight
+            );
         } catch (err) {
             this.calcBgImageSize();
         }
 
         if (window.currentScreen == "gameScreen") {
-            // Draw fps if in debug mode           
+            // Draw fps if in debug mode
             if (DEBUG) {
                 noStroke();
                 fill(0);
@@ -725,24 +757,23 @@ class Game {
                     this.updateGame();
                 }
 
-                this.particles = this.particles.filter(p => {
+                this.particles = this.particles.filter((p) => {
                     p.draw();
                     return !p.dead;
-                })
+                });
             }
 
-            // Animate instructions font size 
+            // Animate instructions font size
             // in and out
             if (this.instructionsFontSize - this.c_instructionsFontSize > 0.1 && !this.started) {
                 this.c_instructionsFontSize = lerp(this.c_instructionsFontSize, this.instructionsFontSize, 0.2);
             }
 
             if (this.c_instructionsFontSize > 0.1) {
-           
                 if (this.started) {
-                    this.c_instructionsFontSize = lerp(this.c_instructionsFontSize, 0, 0.4); 
+                    this.c_instructionsFontSize = lerp(this.c_instructionsFontSize, 0, 0.4);
                 }
-                
+
                 textStyle(NORMAL);
                 noStroke();
                 fill(color(config.settings.textColor));
@@ -757,7 +788,7 @@ class Game {
 
             if (this.started) {
                 this.c_scoreFontSize = lerp(this.c_scoreFontSize, this.scoreFontSize, 0.2);
-                
+
                 textStyle(NORMAL);
                 noStroke();
                 fill(color(config.settings.textColor));
@@ -780,11 +811,11 @@ class Game {
 
             if (this.finished) {
                 this.delayBeforeExit -= deltaTime / 1000;
-            
+
                 if (this.delayBeforeExit < 0) {
                     window.setEndScreenWithScore(this.score);
                 }
-            }       
+            }
         }
     }
 }
@@ -792,7 +823,7 @@ class Game {
 // Helper functions
 
 function playSound(sound) {
-    try {   
+    try {
         if (window.soundEnabled) {
             sound.play();
         }
@@ -821,7 +852,7 @@ function randomPointInRect(rect, floor_ = true) {
         x = floor(x);
         y = floor(y);
     }
-    return { x, y }
+    return { x, y };
 }
 
 class FloatingText {
@@ -854,7 +885,9 @@ class FloatingText {
                 to: { size: 0 },
                 duration: this.iLifespan * 1000,
                 easing: this.easing,
-                step: state => { this.size = state.size }
+                step: (state) => {
+                    this.size = state.size;
+                },
             });
             this.startEase = true;
         }
@@ -863,7 +896,6 @@ class FloatingText {
         this.dead = this.lifespan <= 0;
 
         if (!this.dead) {
-
             this.x += this.acc.x;
             this.y += this.acc.y;
 
@@ -904,7 +936,6 @@ class Particle {
     }
 
     draw() {
-
         if (!this.startEase) {
             this.startEase = true;
             shifty.tween({
@@ -912,18 +943,19 @@ class Particle {
                 to: { size: 0 },
                 duration: this.iLifespan * 1000,
                 easing: this.easing,
-                step: state => { this.size = state.size; }  
+                step: (state) => {
+                    this.size = state.size;
+                },
             });
         }
 
         this.lifespan -= deltaTime / 1000;
 
-        this.rotation += this.rotSpeed * deltaTime / 1000;
+        this.rotation += (this.rotSpeed * deltaTime) / 1000;
 
         this.dead = this.lifespan <= 0;
 
         if (!this.dead) {
-
             this.x += this.acc.x;
             this.y += this.acc.y;
 
@@ -978,7 +1010,7 @@ class Rectangle {
         }
         return false;
     }
-    
+
     debug() {
         if (DEBUG) {
             stroke(this.debugColor);
@@ -994,10 +1026,7 @@ class Rectangle {
 }
 
 function intersectRect(r1, r2) {
-    return !(r2.left() > r1.right() ||
-        r2.right() < r1.left() ||
-        r2.top() > r1.bottom() ||
-        r2.bottom() < r1.top());
+    return !(r2.left() > r1.right() || r2.right() < r1.left() || r2.top() > r1.bottom() || r2.bottom() < r1.top());
 }
 
 function randomParticleAcc(amt) {
@@ -1011,6 +1040,6 @@ function calculateAspectRatioFit(srcWidth, srcHeight, maxWidth, maxHeight) {
     return { width: srcWidth * ratio, height: srcHeight * ratio };
 }
 
-//------------------------------ 
+//------------------------------
 
 module.exports = Game;
