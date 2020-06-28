@@ -417,7 +417,7 @@
             "theme": "assets/theme.ogg",
             "volume": "0.7",
             "coinSound": "assets/tap.wav",
-            "lose": "assets/lose.wav",
+            "loseSound": "assets/lose.wav",
             "hitSound": "assets/hit.wav"
         },
         "postGameScreen": {

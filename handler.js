@@ -95,7 +95,7 @@ function loadImages() {
 function loadSounds() {
     window.sounds.theme = loadSound(config.settings.theme);
     window.sounds.coinSound = loadSound(config.settings.coinSound);
-    window.sounds.lose = loadSound(config.settings.lose);
+    window.sounds.lose = loadSound(config.settings.loseSound);
     window.sounds.hit = loadSound(config.settings.hitSound);
 }
 
