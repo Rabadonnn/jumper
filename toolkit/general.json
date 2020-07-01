@@ -64,7 +64,7 @@
                         "maxValue": 400,
                         "stepSize": "1"
                     }
-                }, 
+                },
                 {
                     "key": "cardColor",
                     "header": "Card Color",
@@ -197,7 +197,7 @@
                     "header": "Health count",
                     "type": "range",
                     "options": {
-                        "minValue": 2, 
+                        "minValue": 2,
                         "maxValue": 5,
                         "stepSize": 1
                     }
