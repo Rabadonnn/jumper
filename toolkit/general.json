@@ -42,7 +42,8 @@
                     "type": "dropdown",
                     "options": [
                         "cover",
-                        "fit"
+                        "fit",
+                        "stretch"
                     ]
                 },
                 {
@@ -392,7 +393,7 @@
             "buttonColor": "#000000",
             "buttonTextColor": "#ffffff",
             "backgroundImage": "assets/background.png",
-            "backgroundMode": "cover",
+            "backgroundMode": "stretch",
             "backgroundColor": "#ffffff",
             "titleImage": "assets/placeholder_logo.jpg",
             "titleImageSize": 200,

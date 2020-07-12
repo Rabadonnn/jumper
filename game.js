@@ -716,6 +716,9 @@ class Game {
             let coverRatio = Math.max(originalRatios.width, originalRatios.height);
             this.bgImageWidth = this.bgImage.width * coverRatio;
             this.bgImageHeight = this.bgImage.height * coverRatio;
+        } else if (config.preGameScreen.backgroundMode == "stretch") {
+            this.bgImageWidth = width;
+            this.bgImageHeight = height;
         } else {
             let size = calculateAspectRatioFit(this.bgImage.width, this.bgImage.height, width, height);
             this.bgImageWidth = size.width;
